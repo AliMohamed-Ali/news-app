@@ -1,0 +1,29 @@
+version: '3'
+services:
+  node-app:
+    container_name: express-app-container
+    build: 
+      context: .
+      target: development
+    volumes:
+      - ./src:/app/src:ro
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+    
+  data-base:
+    image: mongo
+    restart: always
+    # volumes:
+    #   - mongo_db:/data/db 
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+
+  # volumes:
+  #   mongo_db:

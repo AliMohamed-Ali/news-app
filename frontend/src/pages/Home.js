@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import { useAuthContext } from '../hooks/useAuthContext';
 import {Link} from 'react-router-dom';
+import NewsDetails from '../components/NewsDetails';
+import Skeleton from 'react-loading-skeleton';
 
 export default function Home() {
   const [news,setNews]=useState([]);
+  const [isload,setIsload] = useState(true)
   const { user } = useAuthContext();
   useEffect(()=>{
     const fetchData = async()=>{
@@ -14,7 +17,9 @@ export default function Home() {
       const json = await response.json();
       if(response.ok){
         setNews(json.news.articles);
+        setIsload(false)
       }
+      setIsload(false)
     }
     fetchData()
   },[user.token])
@@ -22,18 +27,10 @@ export default function Home() {
     <>
       <div className='container  container-margin' >
         <div className="row text-center">
-        {news.length?
+        {isload?<Skeleton count={5}/>:news.length?
           news.map((val,indx)=>{
               return (
-                  <div className='col my-3' key={val.source.id+indx}>
-                    <div className="card" style={{width: "18rem"}}>
-                      <img src={val.urlToImage} className="card-img-top" alt="..."/>
-                      <div className="card-body">
-                        <h5 className="card-title">{val.title}</h5>
-                        <p className="card-text">{val.description}</p>
-                      </div>
-                    </div>
-                  </div>
+                  <NewsDetails key={indx} news={val}/>
                 )
               }):
           (<div className='container-margin'>

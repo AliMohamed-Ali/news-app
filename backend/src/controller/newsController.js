@@ -1,9 +1,8 @@
 const { fetchAllSources, fetchSubscribeNews } = require('../API/news');
-const {currentUser} = require('../helper/userHelpers');
+const User = require('../models/userModel')
 
 const getNewsFromSubscribed =async(req,res)=>{
-    const user_id = req.user._id;
-    const { sources } = await currentUser(user_id);
+    const {sources} = req.user
     try{
         if(sources.length>0){
             const allNews = await fetchSubscribeNews(sources.toString());
@@ -18,8 +17,7 @@ const getNewsFromSubscribed =async(req,res)=>{
 }
 
 const getAllSources = async(req,res)=>{
-    const user_id = req.user._id;
-    const {sources} = await currentUser(user_id);
+    const {sources} = req.user;
     try{
     const AllSources = await fetchAllSources();
     if(!AllSources){
@@ -38,8 +36,8 @@ const getAllSources = async(req,res)=>{
 }
 
 const subSources =async(req,res)=>{
-    const user_id = req.user._id;
-    const user = await currentUser(user_id);
+    const user = req.user;
+
     const {id:sourceId} = req.params;
     try{
         if(user.sources.includes(sourceId)){
@@ -54,8 +52,8 @@ const subSources =async(req,res)=>{
 }
 
 const unSubSources =async(req,res)=>{
-    const user_id = req.user._id;
-    const user = await currentUser(user_id);
+    const user = req.user;
+
     const {id:sourceId} = req.params;
     try{
         if(!user.sources.includes(sourceId)){
@@ -69,8 +67,33 @@ const unSubSources =async(req,res)=>{
     }
 }
 
+const popularSources = async(req,res)=>{
+    try{
+        const topSources =await User.aggregate([
+            {$project :{sources:1}},
+            {$unwind:"$sources"},
+            {$group:
+                {
+                    "Count": {"$sum": 1},
+                    "_id":"$sources"
+                    
+                }
+            },
+            {$sort:{"Count":-1}},
+            {$limit:5},
+            {
+                $addFields:{"sources":"$_id"}
+            },
+            {$project :{sources:1,_id:0}}
+        ])
+        const popularSources = topSources.map((src)=>src.sources);
+        console.log(popularSources)
+        res.status(200).json({popularSources})
+    }catch(err){
+        res.status(500).json({error:"something went error"})
+    }
+}
 
 
 
-
-module.exports= { getNewsFromSubscribed,getAllSources,subSources ,unSubSources}
+module.exports= { getNewsFromSubscribed,getAllSources,subSources ,unSubSources,popularSources}

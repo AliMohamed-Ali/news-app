@@ -1,0 +1,15 @@
+version: '3'
+services:
+  node-app:
+    container_name: express-app-container
+    build: 
+      context: .
+      target: production
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    command: npm start
+    
