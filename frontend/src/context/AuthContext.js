@@ -8,7 +8,7 @@ const authReducer = (state,action)=>{
         case "LOGOUT":
             return {user:null}
         default:
-            return state
+            return state   
     }
 }
 export const AuthContextProvider = ({children})=>{

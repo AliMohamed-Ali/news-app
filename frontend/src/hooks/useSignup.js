@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import axiosInstance from '../API/axiosInstance';
 import { useAuthContext } from './useAuthContext';
 
 export  function useSignup() {
@@ -6,22 +7,20 @@ export  function useSignup() {
     const [isloading,setIsloading] = useState(null);
     const {dispatch} = useAuthContext();
     const signup = async(fullName,email,password)=>{
-        setIsloading(true);
-        const response = await fetch('/api/user/signup',{
-            method:"POST",
-            headers:{"Content-Type":"application/json"},
-            body:JSON.stringify({fullName,email,password})
-        });
-        const json = await response.json();
-        if(!response.ok){
+        try{
+            setIsloading(true);
+            const response = await axiosInstance.post('/api/user/signup',{
+                fullName,email,password
+            });
+            if(response.status === 200){
+                setIsloading(false);
+                setError(null);
+                localStorage.setItem("user",JSON.stringify(response.data));
+                dispatch({type:"LOGIN",payload:response.data});
+            }
+        }catch(err){
             setIsloading(false);
-            setError(json.error);
-        }
-        if(response.ok){
-            setIsloading(false);
-            setError(null);
-            localStorage.setItem("user",JSON.stringify(json));
-            dispatch({type:"LOGIN",payload:json});
+            setError(err.response.data.error);
         }
     }
   return {signup,isloading,error}

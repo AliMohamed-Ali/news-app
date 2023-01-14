@@ -9,14 +9,13 @@ const createToken = (_id)=>{
 //login
 const loginUser = async(req,res)=>{
     const {email,password}= req.body;
-    
     try{
         const user = await User.login(email,password);
         const token = createToken(user._id);
-        logger.info(`login ${user.fullName}`)
+        logger.info(`success login: ${email}`)
         res.status(200).json({fullName:user.fullName,token});
     }catch(err){
-        logger.error(`login fail ${err.message}`)
+        logger.error(`fail login: ${email}`)
         res.status(400).json({error:err.message})
     }
 
@@ -27,8 +26,10 @@ const signupUser = async(req,res)=>{
    try{
     const user =await User.signup(fullName,email,password);
     const token = createToken(user._id);
+    logger.info(`success signup email:${email}`)
     res.status(200).json({fullName,token});
    }catch(err){
+    logger.error(`fail signup email:${email}`)
     res.status(400).json({error:err.message})
    }
 };

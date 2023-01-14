@@ -26,16 +26,16 @@ const userSchema = new mongoose.Schema({
 userSchema.statics.signup = async function(fullName,email,password){
     const emailExists = await this.findOne({email});
     if(!fullName || !email || !password){
-        throw Error("All fields must be filled")
+        throw new Error("All fields must be filled")
     }
     if(!validator.isEmail(email)){
-        throw Error('Email is not avalid')
+        throw new Error('Email is not avalid')
     }
     if(!validator.isStrongPassword(password)){
-        throw Error('Password not strong enough')
+        throw new Error('Password not strong enough')
     }
     if(emailExists){
-        throw Error("Email already in use")
+        throw new Error("Email already in use")
     }
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password,salt);
@@ -44,16 +44,15 @@ userSchema.statics.signup = async function(fullName,email,password){
 }
 userSchema.statics.login = async function(email,password){
     if(!email || !password){
-        throw Error("All fields must be filled")
+        throw new Error("All fields must be filled")
     }
     const user = await this.findOne({email});
     if(!user){
-        throw Error("The email or password is not valid")
+        throw new Error("The email or password is not valid")
     }
-    // console.log(user)
     const passwordValid = await bcrypt.compare(password,user.password);
     if(!passwordValid){
-        throw Error("The email or password is not valid") 
+        throw new Error("The email or password is not valid") 
     }
     return user;
 }

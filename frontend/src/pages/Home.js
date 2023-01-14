@@ -3,26 +3,32 @@ import { useAuthContext } from '../hooks/useAuthContext';
 import {Link} from 'react-router-dom';
 import NewsDetails from '../components/NewsDetails';
 import Skeleton from 'react-loading-skeleton';
+import { useLogout } from '../hooks/useLogout';
+import axiosInstance from '../API/axiosInstance';
 
 export default function Home() {
   const [news,setNews]=useState([]);
   const [isload,setIsload] = useState(true)
   const { user } = useAuthContext();
+  const {logout} = useLogout()
   useEffect(()=>{
     const fetchData = async()=>{
-      const response = await fetch('/api/news',{
-        method:"GET",
-        headers:{"Authorization":`Bearer ${user.token}`}
-      });
-      const json = await response.json();
-      if(response.ok){
-        setNews(json.news.articles);
+      try{
+        const response = await axiosInstance.get('/api/news',{
+          headers : {
+            "Authorization":`Bearer ${user.token}`
+          }
+        });
         setIsload(false)
+        setNews(response.data.news.articles);
+      }catch(err){
+        if(err.response.status === 401){
+          logout()
+        }
       }
-      setIsload(false)
     }
     fetchData()
-  },[user.token])
+  },[])
   return (
     <>
       <div className='container  container-margin' >
