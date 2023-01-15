@@ -20,8 +20,16 @@ const userSchema = new mongoose.Schema({
         {
             type:String
         }
-    ]
-    
+    ],
+    log:[
+        {
+            info:String,
+            lastLogin:{
+                type:Date,
+                default:Date.now()
+            }
+        }
+    ]   
 });
 userSchema.statics.signup = async function(fullName,email,password){
     const emailExists = await this.findOne({email});
@@ -50,10 +58,18 @@ userSchema.statics.login = async function(email,password){
     if(!user){
         throw new Error("The email or password is not valid")
     }
+    if(user.log.length >= 10){
+        user.log.shift()
+        
+    }
     const passwordValid = await bcrypt.compare(password,user.password);
     if(!passwordValid){
+        user.log.push({info:"login fail password not correct"});
+        user.save()
         throw new Error("The email or password is not valid") 
     }
+    user.log.push({info:"login success"});
+    user.save()
     return user;
 }
 module.exports = mongoose.model("User",userSchema)
